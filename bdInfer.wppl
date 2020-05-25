@@ -127,12 +127,16 @@ var observeByFactor = function(ages, t, lambda, mu){
 
 var gaussianKernel = function(prevVal) {
   //console.log("drift Kernel")
-  return Gaussian({mu: prevVal, sigma: 0.01});
+  return Gaussian({mu: prevVal, sigma: 0.05*prevVal});
 }
 
 var generateBDTimesFactor = function(sortedAges){
-	var lambda = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
-	var mu = sample(Uniform({a:0.0, b:lambda}),{driftKernel:gaussianKernel})
+	var r = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
+	var eps = sample(Uniform({a:0.0, b:0.9}),{driftKernel:gaussianKernel})
+	var lambda = r/(1.0-eps)
+	var mu = eps*lambda
+	//var lambda = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
+	//var mu = sample(Uniform({a:0.0, b:lambda*0.9}),{driftKernel:gaussianKernel})
 	var n = sortedAges.length - 1
 	var t = sortedAges[sortedAges.length -1]
 
@@ -148,12 +152,20 @@ var phyjson = JSON.parse(fs.readFileSync(json_file, "utf8"))
 var nodeAges = getSortedNodeAges(phyjson.trees[0].root)
 
 //var samples = Infer({model: function(){return generateBDTimesMapToUnif(nodeAges)}, method:"MCMC", kernel: "MH", samples:1000,burn:500,lag:10})
+console.log("Starting MCMC...")
 var samples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"MCMC", samples:300,burn:5000,lag:100})
-
+console.log("Finished running MCMC.")
+console.log("Starting SMC...")
+var smcSamples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"SMC", particles:300, kernel:"MH",rejuvSteps:1})
+console.log("Finished running SMC.")
 // save results to a file
 var lastSlash = json_file.lastIndexOf('/')
 var fileName = json_file.slice(lastSlash+1)
 
 fs.writeFile("results/"+fileName+".mcmc",JSON.stringify(samples),function(err){
+	return 0;
+})
+
+fs.writeFile("results/"+fileName+".smc",JSON.stringify(smcSamples),function(err){
 	return 0;
 })
