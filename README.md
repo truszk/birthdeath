@@ -11,10 +11,13 @@ The scripts will probably not work on Windows due to '/' vs. '\' difference in p
 Before running the python scripts, make sure you update the path to your nexus2phyjson installation in both scripts.
 
 To generate synthetic data, run
+
 ``
 python python/generate_trees.py
 ``
-To convert the empirical data to phyjson, put the *tre files in data/empirical and run
+
+To convert the empirical data to phyjson, put the *tre files in ``data/empirical`` and run
+
 ``
 python python/preprocess_real_trees.py
 ``
