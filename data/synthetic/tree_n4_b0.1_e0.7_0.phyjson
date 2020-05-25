@@ -1,0 +1,62 @@
+{
+    "format": "phyjson",
+    "taxa": [
+        {
+            "id": 0,
+            "name": "T1"
+        },
+        {
+            "id": 1,
+            "name": "T2"
+        },
+        {
+            "id": 2,
+            "name": "T3"
+        },
+        {
+            "id": 3,
+            "name": "T4"
+        }
+    ],
+    "trees": [
+        {
+            "name": "1",
+            "root": {
+                "branch_length": -1.0,
+                "children": [
+                    {
+                        "branch_length": 3.5976513755581694,
+                        "children": [
+                            {
+                                "branch_length": 2.408556514239666,
+                                "children": [],
+                                "taxon": 2
+                            },
+                            {
+                                "branch_length": 2.408556514239666,
+                                "children": [],
+                                "taxon": 0
+                            }
+                        ]
+                    },
+                    {
+                        "branch_length": 3.5118101867373515,
+                        "children": [
+                            {
+                                "branch_length": 2.4943977030604834,
+                                "children": [],
+                                "taxon": 3
+                            },
+                            {
+                                "branch_length": 2.4943977030604834,
+                                "children": [],
+                                "taxon": 1
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "version": "1.0"
+}
