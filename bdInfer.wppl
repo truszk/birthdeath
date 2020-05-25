@@ -1,3 +1,4 @@
+// parses a tree read from a phyjson file and produces a list of internal node ages
 var getNodeAges = function(tree){
 	if(tree.children.length==0){
 		return []
@@ -9,10 +10,12 @@ var getNodeAges = function(tree){
 	return leftAges.concat(rightAges).concat([curAge])
 }
 
+// an expression that appears commonly in probability formulas arising from the reconstructed birth-death process 
 var expTerm = function(t, lambda, mu){
 	return Math.exp(-(lambda-mu)*t)
 }
 
+// probability of having 0 descendants after time t - useful building block for other expressions
 var p_0 = function(t, lambda, mu){
 	var expterm = expTerm(t, lambda, mu)
 	return mu * (1.0 - expterm)/(lambda - mu*expterm)
@@ -33,7 +36,7 @@ var log_p_0_div_mu = function(t, lambda, mu){
 	return Math.log(p_0_div_mu(t, lambda, mu))
 }
 
-
+// probability of having exactly 1 descendant after time t
 var p_1 = function(t, lambda, mu){
 	var r = lambda - mu
 	var sqrtDenom = lambda - mu * expTerm(t, lambda, mu)
@@ -48,6 +51,7 @@ var log_p_1 = function(t, lambda, mu){
 	return 2.0*logr - (lambda - mu)*t - logDenom
 }
 
+// probability of having n descentants after time t
 var p_n = function(t, n, lambda, mu){
 	var rho = lambda/mu
 	return Math.pow(rho,n-1)*p_1(t,lambda,mu)*Math.pow(p_0(t,lambda,mu),n-1)
@@ -95,7 +99,7 @@ var CDFNodeAge = function(s, t, lambda, mu){
 	return y
 }
 
-
+// log density of the node age distribution - used for factor() statements
 var logDensityNodeAge = function(s, t, lambda, mu){
 	var exptermT = expTerm(t, lambda, mu)
 	var exptermS = expTerm(s, lambda, mu)
@@ -105,48 +109,13 @@ var logDensityNodeAge = function(s, t, lambda, mu){
 
 }
 
-
-
 var getSortedNodeAges = function(tree){
 	var ages = getNodeAges(tree)
 	var sortedAges = sort(ages)
 	return sortedAges
 }
 
-
-
-var sampleTime = function(t, lambda, mu){
-	var y = sample(Uniform({a:0.0, b:1.0}))
-	var s = inverseCDFNodeAge(y, t, lambda, mu)
-	return s
-}
-
-var sampleTimes = function(n_times, t, lambda, mu){
-	return repeat(n_times,function(){return sampleTime(t, lambda, mu)})
-}
-
-var generateBDTimes = function(sortedAges){
-	var lambda = sample(Gamma({shape:4.0, scale:0.25}))
-	var mu = sample(Uniform({a:0.0, b:lambda}))
-	var n = sortedAges.length - 1
-	var t = sortedAges[sortedAges.length -1]
-
-	var sampleTimesFun = function(){ sampleTimes(n, t, lambda, mu) }
-	var agesDist = Infer({model: sampleTimesFun, method: "MCMC"})
-
-	observe(agesDist,sortedAges.slice(0,sortedAges.length-1))
-	return {lambda: lambda, mu: mu}
-
-}
-
-var observeUnif = function(unifAges){
-	if(unifAges.length == 0){
-		return 0
-	}
-	observe(Uniform({a:0.0,b:1.0}),unifAges[0])
-	return observeUnif(unifAges.slice(1,unifAges.length))
-}
-
+// incorporates the observed data by reweighting execution paths according to the data likelihood 
 var observeByFactor = function(ages, t, lambda, mu){
 	if(ages.length == 0){
 		return 0
@@ -159,20 +128,6 @@ var observeByFactor = function(ages, t, lambda, mu){
 var gaussianKernel = function(prevVal) {
   //console.log("drift Kernel")
   return Gaussian({mu: prevVal, sigma: 0.01});
-}
-
-var generateBDTimesMapToUnif = function(sortedAges){
-	//var lambda = sample(Uniform({a:0.01, b:1.0}),{driftKernel:gaussianKernel})
-	var lambda = sample(Uniform({a:0.0, b:1.0}),{driftKernel:gaussianKernel})
-	var mu = sample(Uniform({a:0.0, b:lambda}),{driftKernel:gaussianKernel})
-	var n = sortedAges.length - 1
-	var t = sortedAges[sortedAges.length -1]
-
-	var uniformizedAges = map(function(x){return CDFNodeAge(x,t,lambda,mu)},sortedAges.slice(0,sortedAges.length-1))
-	observeUnif(uniformizedAges)
-	console.log("lambda = "+lambda.toString()+" mu ="+mu.toString())
-	return {lambda:lambda,mu:mu}
-
 }
 
 var generateBDTimesFactor = function(sortedAges){
@@ -199,6 +154,6 @@ var samples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, 
 var lastSlash = json_file.lastIndexOf('/')
 var fileName = json_file.slice(lastSlash+1)
 
-fs.writeFile("results/"+fileName,JSON.stringify(samples),function(err){
+fs.writeFile("results/"+fileName+".mcmc",JSON.stringify(samples),function(err){
 	return 0;
 })
