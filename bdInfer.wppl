@@ -187,25 +187,18 @@ var generateBDTimesFactor = function(sortedAges){
 }
 
 
-
-
-//var json_file = "nexus2phyjson/nexus2phyjson/basic2.phyjson"
-display(argv)
-var json_file = argv.tree //"data/synthetic/tree_n16_b0.1_e0.0_2.phyjson"
+var json_file = argv.tree // e.g. "data/synthetic/tree_n16_b0.1_e0.0_2.phyjson"
 var phyjson = JSON.parse(fs.readFileSync(json_file, "utf8"))
+// get node ages from tree
 var nodeAges = getSortedNodeAges(phyjson.trees[0].root)
-var tOrigin = nodeAges[nodeAges.length-1]
-var lambda = 0.1
-var mu = 0.0
-
 
 //var samples = Infer({model: function(){return generateBDTimesMapToUnif(nodeAges)}, method:"MCMC", kernel: "MH", samples:1000,burn:500,lag:10})
-var samples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"MCMC", samples:10000,burn:5000,lag:100})
-logLhoodFromSortedAges(nodeAges, 1.0, 0.00) //+ log_p_n(nodeAges[nodeAges.length-1],nodeAges.length+1,0.1,0.02)
-logLhoodFromSortedAges(nodeAges, 0.5, 0.00)
-logLhoodFromSortedAges(nodeAges, 1.0, 0.7)
-logLhoodFromSortedAges(nodeAges, 1.0, 0.2)
+var samples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"MCMC", samples:300,burn:5000,lag:100})
 
-fs.writeFile("results/synthetic",samples.toString(),function(err){
+// save results to a file
+var lastSlash = json_file.lastIndexOf('/')
+var fileName = json_file.slice(lastSlash+1)
+
+fs.writeFile("results/"+fileName,JSON.stringify(samples),function(err){
 	return 0;
 })
