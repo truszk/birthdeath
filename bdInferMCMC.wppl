@@ -28,6 +28,9 @@ fs.writeFile("results/"+fileName+".nsamples"+nsamples+".burn"+burnin+".lag"+lag+
 	return 0;
 })
 
-//fs.writeFile("results/"+fileName+".smc",JSON.stringify(smcSamples),function(err){
-//	return 0;
-//})
+
+// some summaries
+var meanPosterior = getMeanPosterior(samples.params.samples)
+console.log("Mean posterior = "+JSON.stringify(meanPosterior))
+
+

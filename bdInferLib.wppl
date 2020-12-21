@@ -155,7 +155,21 @@ var gaussianKernel = function(prevVal) {
 
 // main modelling function - specifies the process for generating the birth-death tree and calls the conditioning
 // function (observeByFactor)
-var generateBDTimesFactor = function(sortedAges){
+var generateBDTimesFactor = function(ages){
+	var r = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
+	var eps = sample(Uniform({a:0.0, b:0.9}),{driftKernel:gaussianKernel})
+	var lambda = r/(1.0-eps)
+	var mu = eps*lambda
+	var t = max(ages)
+
+	observeByFactor(ages, t, lambda, mu)
+	//console.log("lambda = "+lambda.toString()+" mu ="+mu.toString())
+	return {lambda : lambda,mu : mu}
+}
+
+// main modelling function - specifies the process for generating the birth-death tree and calls the conditioning
+// function (observeByFactor)
+var generateBDTimesFactorSorted = function(sortedAges){
 	var r = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
 	var eps = sample(Uniform({a:0.0, b:0.9}),{driftKernel:gaussianKernel})
 	var lambda = r/(1.0-eps)
@@ -167,6 +181,7 @@ var generateBDTimesFactor = function(sortedAges){
 	//console.log("lambda = "+lambda.toString()+" mu ="+mu.toString())
 	return {lambda : lambda,mu : mu}
 }
+
 
 // computes the posterior mean from an array of samples (that's distobject.params.samples)
 var getMeanPosterior = function(samples){
@@ -180,6 +195,12 @@ var getMeanPosterior = function(samples){
 
 // appears not to exist in webppl
 var max = function(lst){
+	if(lst.length==1){
+		return lst[0]
+	}
+	if(lst.length==0){
+		return -1000000000 //hack just in case, will fix later
+	}
 	var prevmax = max(lst.slice(1,lst.length))
 	var maxval = lst[0] > prevmax ? lst[0] : prevmax
 	return maxval

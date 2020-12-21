@@ -11,12 +11,12 @@ var rejuvSteps = argv.rejuvSteps ? argv.rejuvSteps : 0
 
 var phyjson = JSON.parse(fs.readFileSync(json_file, "utf8"))
 
-var nodeAges = getSortedNodeAges(phyjson.trees[0].root)
+var nodeAges = getNodeAges(phyjson.trees[0].root)
 
 // run SMC
 
 console.log("Starting SMC...")
-var smcSamples = Infer({model: function(){return generateBDTimesFactorSorted(nodeAges)}, method:"SMC", particles : nsamples, kernel:"MH",rejuvSteps:rejuvSteps})
+var smcSamples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"SMC", particles : nsamples, kernel:"MH",rejuvSteps:rejuvSteps})
 console.log("Finished running SMC.")
 
 // save results to a file
