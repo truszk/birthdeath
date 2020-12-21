@@ -3,6 +3,7 @@
 - python 3.x
 - dendropy (I used version 4.4.0)
 - nexus2phyjson
+- pandas, seaborn (only for plotting)
 
 The scripts will probably not work on Windows due to '/' vs. '\' difference in path conventions.
 
@@ -40,6 +41,7 @@ Where:
 - `nsamples` is the total number of samples collected (default: 300)
 
 To run SMC, type
+
 ``
 webppl bdInferSMCUnsorted.wppl --require . --require fs -- --tree path/to/phyjson/file [--rejuvSteps steps --samples nsamples]
 ``
