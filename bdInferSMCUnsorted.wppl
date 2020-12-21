@@ -30,3 +30,11 @@ fs.writeFile("results/"+fileName+".nsamples"+nsamples+".rej"+rejuvSteps+".smc",J
 // some summaries
 var meanPosterior = getMeanPosterior(smcSamples.params.samples)
 console.log("Mean posterior = "+JSON.stringify(meanPosterior))
+
+// if true parameter values are specified as input, compute the difference
+if(argv.trueLambda){
+	var diffLambda = meanPosterior.lambda - argv.trueLambda
+	var diffMu = meanPosterior.mu - argv.trueMu
+	console.log("diffLambda= "+diffLambda)
+	console.log("diffMu= "+diffMu)
+}

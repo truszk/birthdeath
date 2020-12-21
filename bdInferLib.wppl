@@ -115,16 +115,7 @@ var getSortedNodeAges = function(tree){
 	return sortedAges
 }
 
-// incorporates the observed data by reweighting execution paths according to the data likelihood 
-var observeByFactor = function(ages, t, lambda, mu){
-	if(ages.length == 0){
-		return 0
-	}
-	factor(logDensityNodeAge(ages[0], t, lambda, mu))
-	randomPrint(0.001,"data points ahead:"+ages.length)
-	return observeByFactor(ages.slice(1,ages.length),t,lambda,mu)
 
-}
 
 var observeByFactorMinibatch = function(ages, t, lambda, mu, batchSize){
 	if(ages.length == 0){
@@ -151,6 +142,22 @@ var randomPrint = function(prob, msg){
 var gaussianKernel = function(prevVal) {
   //console.log("drift Kernel")
   return Gaussian({mu: prevVal, sigma: 0.05*prevVal});
+}
+
+
+
+
+
+
+// incorporates the observed data by reweighting execution paths according to the data likelihood 
+var observeByFactor = function(ages, t, lambda, mu){
+	if(ages.length == 0){
+		return 0
+	}
+	factor(logDensityNodeAge(ages[0], t, lambda, mu))
+	randomPrint(0.001,"data points ahead:"+ages.length)
+	return observeByFactor(ages.slice(1,ages.length),t,lambda,mu)
+
 }
 
 // main modelling function - specifies the process for generating the birth-death tree and calls the conditioning
