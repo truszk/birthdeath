@@ -1,0 +1,28 @@
+var json_file = argv.tree // e.g. "data/synthetic/tree_n16_b0.1_e0.0_2.phyjson"
+
+// set parameters and defaults
+
+var nsamples = argv.samples ? argv.samples : 300
+
+var rejuvSteps = argv.rejuvSteps ? argv.rejuvSteps : 0
+
+
+// read data and process it into a list of node ages
+
+var phyjson = JSON.parse(fs.readFileSync(json_file, "utf8"))
+
+var nodeAges = getSortedNodeAges(phyjson.trees[0].root)
+
+// run SMC
+
+console.log("Starting SMC...")
+var smcSamples = Infer({model: function(){return generateBDTimesFactor(nodeAges)}, method:"SMC", particles : nsamples, kernel:"MH",rejuvSteps:0})
+console.log("Finished running SMC.")
+
+// save results to a file
+var lastSlash = json_file.lastIndexOf('/')
+var fileName = json_file.slice(lastSlash+1)
+
+fs.writeFile("results/"+fileName+".nsamples"+nsamples+".rej"+rejuvSteps+".smc",JSON.stringify(smcSamples),function(err){
+	return 0;
+})

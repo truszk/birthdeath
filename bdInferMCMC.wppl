@@ -1,0 +1,33 @@
+var json_file = argv.tree // e.g. "data/synthetic/tree_n16_b0.1_e0.0_2.phyjson"
+
+// set parameters and defaults
+
+var nsamples = argv.samples ? argv.samples : 300
+
+var lag = argv.lag ? argv.lag : 100
+
+var burnin = argv.burnin ? argv.burnin : 5000
+
+
+// read data and process it into a list of node ages
+
+var phyjson = JSON.parse(fs.readFileSync(json_file, "utf8"))
+
+var nodeAges = getSortedNodeAges(phyjson.trees[0].root)
+
+// run MCMC
+console.log("Starting MCMC...")
+var samples = Infer({model : function(){return generateBDTimesFactor(nodeAges)}, method : "MCMC", samples : nsamples, burn : burnin, lag : lag})
+console.log("Finished running MCMC.")
+
+// save results to a file
+var lastSlash = json_file.lastIndexOf('/')
+var fileName = json_file.slice(lastSlash+1)
+
+fs.writeFile("results/"+fileName+".mcmc",JSON.stringify(samples),function(err){
+	return 0;
+})
+
+//fs.writeFile("results/"+fileName+".smc",JSON.stringify(smcSamples),function(err){
+//	return 0;
+//})
