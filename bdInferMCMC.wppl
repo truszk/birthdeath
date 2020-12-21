@@ -24,7 +24,7 @@ console.log("Finished running MCMC.")
 var lastSlash = json_file.lastIndexOf('/')
 var fileName = json_file.slice(lastSlash+1)
 
-fs.writeFile("results/"+fileName+".mcmc",JSON.stringify(samples),function(err){
+fs.writeFile("results/"+fileName+".nsamples"+nsamples+".burn"+burnin+".lag"+lag+".mcmc",JSON.stringify(samples),function(err){
 	return 0;
 })
 

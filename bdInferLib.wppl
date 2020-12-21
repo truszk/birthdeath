@@ -126,6 +126,20 @@ var observeByFactor = function(ages, t, lambda, mu){
 
 }
 
+var observeByFactorMinibatch = function(ages, t, lambda, mu, batchSize){
+	if(ages.length == 0){
+		return 0
+	}
+	var miniBatch = ages.slice(0,batchSize)
+	var logDensities = map(function(x){ return logDensityNodeAge(x, t, lambda, mu)}, miniBatch)
+	var totalLogDensity = sum(logDensities)
+	factor(totalLogDensity)
+	randomPrint(0.001,"data points ahead:"+ages.length)
+	return observeByFactorMinibatch(ages.slice(batchSize,ages.length), t, lambda, mu, batchSize)
+
+
+}
+
 // displays a message with a set probability  - useful for debugging
 var randomPrint = function(prob, msg){
 	var display = flip(prob)
@@ -139,17 +153,34 @@ var gaussianKernel = function(prevVal) {
   return Gaussian({mu: prevVal, sigma: 0.05*prevVal});
 }
 
+// main modelling function - specifies the process for generating the birth-death tree and calls the conditioning
+// function (observeByFactor)
 var generateBDTimesFactor = function(sortedAges){
 	var r = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
 	var eps = sample(Uniform({a:0.0, b:0.9}),{driftKernel:gaussianKernel})
 	var lambda = r/(1.0-eps)
 	var mu = eps*lambda
-	//var lambda = sample(Uniform({a:0.0, b:10.0}),{driftKernel:gaussianKernel})
-	//var mu = sample(Uniform({a:0.0, b:lambda*0.9}),{driftKernel:gaussianKernel})
 	var n = sortedAges.length - 1
 	var t = sortedAges[sortedAges.length -1]
 
 	observeByFactor(sortedAges, t, lambda, mu)
 	//console.log("lambda = "+lambda.toString()+" mu ="+mu.toString())
-	return {lambda:lambda,mu:mu}
+	return {lambda : lambda,mu : mu}
+}
+
+// computes the posterior mean from an array of samples (that's distobject.params.samples)
+var getMeanPosterior = function(samples){
+	var lambdas = map(function(x){ return x.value.lambda }, samples)
+	console.log(lambdas)
+	var mus = map(function(x){ return x.value.mu }, samples)
+	var lambdaMean = listMean(lambdas)
+	var muMean = listMean(mus)
+	return {lambda : lambdaMean, mu : muMean}
+}
+
+// appears not to exist in webppl
+var max = function(lst){
+	var prevmax = max(lst.slice(1,lst.length))
+	var maxval = lst[0] > prevmax ? lst[0] : prevmax
+	return maxval
 }

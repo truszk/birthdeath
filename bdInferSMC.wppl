@@ -26,3 +26,7 @@ var fileName = json_file.slice(lastSlash+1)
 fs.writeFile("results/"+fileName+".nsamples"+nsamples+".rej"+rejuvSteps+".smc",JSON.stringify(smcSamples),function(err){
 	return 0;
 })
+
+// some summaries
+var meanPosterior = getMeanPosterior(smcSamples.params.samples)
+console.log("Mean posterior = "+JSON.stringify(meanPosterior))
